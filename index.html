@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Clock & Calendar PWA</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0d47a1">
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Clock & Calendar</h1>
+
+    <section class="card clock-card">
+      <div class="clock" id="clock">--:--:--</div>
+      <label for="tz">Timezone:</label>
+      <select id="tz"></select>
+    </section>
+
+    <section class="card calendar-card">
+      <header class="cal-header">
+        <button id="prev">‹</button>
+        <div id="monthYear"></div>
+        <button id="next">›</button>
+      </header>
+      <table class="calendar" id="calendar"></table>
+    </section>
+
+    <p class="hint">Installable PWA — add to home screen or use GitHub Pages to host.</p>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

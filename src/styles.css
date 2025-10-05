@@ -1,0 +1,22 @@
+:root{
+  --bg:#f3f6fb;
+  --card:#fff;
+  --accent:#0d47a1;
+  --muted:#6b7280;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";margin:0;background:var(--bg);color:#111}
+.container{max-width:720px;margin:24px auto;padding:16px}
+h1{text-align:center;margin:0 0 18px}
+.card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 1px 3px rgba(16,24,40,.06);margin-bottom:16px}
+.clock{font-size:48px;text-align:center;font-weight:600}
+#tz{display:block;margin:12px auto}
+.calendar{width:100%;border-collapse:collapse;margin-top:8px}
+.calendar th{padding:8px;color:var(--muted);font-weight:600}
+.calendar td{height:64px;text-align:right;padding:8px;border-top:1px solid #eee}
+.calendar td.today{background:linear-gradient(90deg, rgba(13,71,161,0.08), rgba(13,71,161,0.02));border-radius:6px}
+.cal-header{display:flex;align-items:center;justify-content:space-between}
+.cal-header button{background:none;border:1px solid #e5e7eb;padding:6px 10px;border-radius:6px}
+.hint{text-align:center;color:var(--muted);font-size:13px}
+@media (max-width:480px){.clock{font-size:36px}.calendar td{height:48px}}
