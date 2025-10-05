@@ -4,6 +4,9 @@ const calendarEl = document.getElementById('calendar');
 const monthYearEl = document.getElementById('monthYear');
 const prevBtn = document.getElementById('prev');
 const nextBtn = document.getElementById('next');
+const settingsPanel = document.getElementById('settings');
+const openSettingsBtn = document.getElementById('openSettings');
+const closeSettingsBtn = document.getElementById('closeSettings');
 
 let currentDate = new Date();
 let selectedTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -76,6 +79,20 @@ nextBtn.addEventListener('click',()=>{currentDate = new Date(currentDate.getFull
 
 // timezone change
 tzSelect.addEventListener('change',e=>{selectedTZ = e.target.value;localStorage.setItem('selectedTZ',selectedTZ);updateClock();buildCalendar(currentDate)});
+
+// settings open/close
+if(openSettingsBtn){
+  openSettingsBtn.addEventListener('click', ()=>{
+    settingsPanel.style.display = '';
+    settingsPanel.setAttribute('aria-hidden','false');
+  });
+}
+if(closeSettingsBtn){
+  closeSettingsBtn.addEventListener('click', ()=>{
+    settingsPanel.style.display = 'none';
+    settingsPanel.setAttribute('aria-hidden','true');
+  });
+}
 
 // init
 (function init(){

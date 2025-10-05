@@ -11,6 +11,9 @@ body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","
 h1{text-align:center;margin:0 0 18px}
 .card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 1px 3px rgba(16,24,40,.06);margin-bottom:16px}
 .clock{font-size:48px;text-align:center;font-weight:600}
+.btn{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.settings-card h2{margin-top:0}
 #tz{display:block;margin:12px auto}
 .calendar{width:100%;border-collapse:collapse;margin-top:8px}
 .calendar th{padding:8px;color:var(--muted);font-weight:600}

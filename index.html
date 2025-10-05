@@ -14,8 +14,19 @@
 
     <section class="card clock-card">
       <div class="clock" id="clock">--:--:--</div>
+      <div class="controls" style="text-align:center;margin-top:12px;">
+        <button id="openSettings" class="btn">Settings</button>
+      </div>
+    </section>
+
+    <!-- Settings panel (hidden by default) -->
+    <section class="card settings-card" id="settings" aria-hidden="true" style="display:none;">
+      <h2>Settings</h2>
       <label for="tz">Timezone:</label>
       <select id="tz"></select>
+      <div style="margin-top:12px;text-align:right;">
+        <button id="closeSettings" class="btn">Close</button>
+      </div>
     </section>
 
     <section class="card calendar-card">
