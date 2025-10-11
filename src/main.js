@@ -151,8 +151,10 @@ let _modalKeyHandler = null;
 function openNotableModal(year, month, day, cell){
   modalContext = {year, month, day, cell};
   modal.setAttribute('aria-hidden','false');
+  modal.style.display = 'flex';
   modalInput.value = '';
-  modalInput.focus();
+  // small timeout to avoid iOS restoring keyboard before styles apply
+  setTimeout(()=>modalInput.focus(), 50);
   // attach keyboard handler to support Enter, Escape and Tab focus trap
   _modalKeyHandler = function(e){
     // Escape -> close
@@ -193,6 +195,8 @@ function openNotableModal(year, month, day, cell){
 function closeNotableModal(){
   modalContext = null;
   modal.setAttribute('aria-hidden','true');
+  modal.style.display = 'none';
+  try{ modalInput.blur(); }catch(e){}
   if(_modalKeyHandler){
     document.removeEventListener('keydown', _modalKeyHandler);
     _modalKeyHandler = null;
@@ -408,6 +412,8 @@ function goToToday(){
   }
   // initial
   updateHintVisibility();
+  // ensure modal is hidden on load to avoid Mobile Safari restoring it
+  try{ if(modal){ modal.setAttribute('aria-hidden','true'); modal.style.display = 'none'; } if(document.activeElement) document.activeElement.blur(); }catch(e){}
   // listen for display-mode change
   if(window.matchMedia){
     window.matchMedia('(display-mode: standalone)').addEventListener('change', updateHintVisibility);
