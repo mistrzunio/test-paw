@@ -15,7 +15,7 @@ h1{text-align:center;margin:0 0 18px}
 .settings-card h2{margin-top:0}
 #tz{display:block;margin:12px auto}
 .notable-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.notable-pill{background: linear-gradient(90deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06)), var(--accent, #e6eef9); padding:8px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(6,34,53,0.05);box-shadow:0 1px 1px rgba(11,37,64,0.02)}
+.notable-pill{background: linear-gradient(90deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06)), var(--accent, #e6eef9); padding:4px 5px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(6,34,53,0.05);box-shadow:0 1px 1px rgba(11,37,64,0.02)}
 .notable-pill .label{font-weight:600;color:#062235}
 .notable-pill .days{color:rgba(6,34,53,0.75);font-size:13px}
 .notable-pill .remove{background:transparent;border:none;color:#a00;cursor:pointer;padding:4px}

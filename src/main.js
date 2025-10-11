@@ -89,7 +89,7 @@ function renderNotables(){
     const label = document.createElement('div'); label.className='label'; label.textContent = it.label + ': ';
     const daysEl = document.createElement('div'); daysEl.className='days';
     if(days===0) daysEl.textContent = 'Today';
-    else if(days>0) daysEl.textContent = days===1? '1 day' : `${days} days`;
+    else if(days>0) daysEl.textContent = `${days}d`;
     else daysEl.textContent = `${Math.abs(days)} days ago`;
     const rem = document.createElement('button'); rem.className='remove'; rem.textContent='✕';
     rem.addEventListener('click', ()=>{ notables.splice(idx,1); saveNotables(); renderNotables(); });
