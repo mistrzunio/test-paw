@@ -21,6 +21,19 @@
       </div>
     </section>
 
+    <!-- modal for adding notable labels -->
+    <div id="notableModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <h3 id="modalTitle">What's the big day?</h3>
+    <input id="modalLabel" type="text" placeholder="Name it here" aria-label="Label for notable day" />
+        <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
+          <button id="modalCancel" class="btn btn-ghost">Cancel</button>
+          <button id="modalOk" class="btn">Add</button>
+        </div>
+      </div>
+    </div>
+
     <!-- settings removed -->
 
     <section class="card calendar-card">

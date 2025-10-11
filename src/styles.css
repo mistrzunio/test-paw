@@ -35,6 +35,8 @@ h1{text-align:center;margin:0 0 18px}
 .month td.today{background:linear-gradient(90deg, rgba(13,71,161,0.08), rgba(13,71,161,0.02));border-radius:6px}
 .today-flash{animation: flash 1.6s ease-in-out; background: linear-gradient(90deg, rgba(13,71,161,0.18), rgba(13,71,161,0.05));border-radius:6px}
 @keyframes flash{0%{transform:scale(1);opacity:1}50%{transform:scale(1.02);opacity:0.9}100%{transform:scale(1);opacity:1}}
+.month td.notable{background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)), var(--notable-accent, #e6eef9);border-radius:6px;color:#062235;font-weight:600}
+.month td.notable::after{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;margin-left:6px;background:rgba(0,0,0,0.08)}
 .cal-header{display:flex;align-items:center;justify-content:space-between}
 .cal-header #monthYear{background:var(--card);display:inline-block;padding:6px 12px;border-radius:8px}
 .cal-header button{border:1px solid #e5e7eb;padding:6px 10px;border-radius:6px;background:transparent}
@@ -53,3 +55,12 @@ h1{text-align:center;margin:0 0 18px}
 .notable-actions{display:flex;align-items:center}
 .top-hint{text-align:right;color:var(--muted);font-size:14px;font-style: italic;}
 @media (max-width:480px){.clock{font-size:36px}.calendar td{height:48px}}
+
+/* Modal for adding notable label */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60}
+.modal[aria-hidden="false"]{display:flex}
+.modal-backdrop{position:absolute;inset:0;background:rgba(6,34,53,0.28);backdrop-filter:blur(2px)}
+.modal-card{position:relative;background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 30px rgba(6,34,53,0.12);min-width:280px;max-width:90%;display:flex;flex-direction:column}
+.modal-card h3{margin:0 0 8px}
+.modal-card input{padding:8px;border-radius:8px;border:1px solid #e6eef9}
+.btn-ghost{background:transparent;border:1px solid #e5e7eb;color:var(--muted)}

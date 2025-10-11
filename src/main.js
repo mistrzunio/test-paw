@@ -1,4 +1,6 @@
-const tzSelect = document.getElementById('tz');
+
+import { pad, randomAccent, tzNow as getTzNow, formatMonthTitle } from './utils.js';
+import { loadNotables, saveNotables } from './storage.js';
 const calendarEl = document.getElementById('calendar');
 const monthYearEl = document.getElementById('monthYear');
 const monthsContainer = document.getElementById('monthsContainer');
@@ -8,41 +10,6 @@ const todayBtn = document.getElementById('todayBtn');
 let currentDate = new Date();
 let selectedTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 let notables = [];
-
-function pad(n){return n<10? '0'+n: String(n)}
-
-function randomAccent(){
-  // pick very light, low-saturation pastel with alpha for subtle background
-  const h = Math.floor(Math.random()*360);
-  const s = 30; // lower saturation for subtlety
-  const l = 94; // very light
-  const a = 0.54; // low alpha
-  // return as HSL with alpha (CSS color syntax)
-  return `hsl(${h} ${s}% ${l}% / ${a})`;
-}
-
-function loadNotables(){
-  try{
-    const raw = localStorage.getItem('notables');
-    if(raw){ notables = JSON.parse(raw); }
-  }catch(e){notables = []}
-  if(!Array.isArray(notables) || notables.length===0){
-    // defaults: weekend and new year (rules)
-    notables = [
-      {type:'rule', id:'weekend', label:'Weekend', color: randomAccent()},
-      {type:'rule', id:'newyear', label:'New Year', color: randomAccent()}
-    ];
-    saveNotables();
-  }
-  // backfill missing colors
-  let changed = false;
-  for(const it of notables){ if(!it.color){ it.color = randomAccent(); changed = true } }
-  if(changed) saveNotables();
-}
-
-function saveNotables(){
-  localStorage.setItem('notables', JSON.stringify(notables));
-}
 
 function computeDaysLeft(item){
   // get today's date in selected timezone
@@ -84,15 +51,15 @@ function renderNotables(){
   notables.forEach((it,idx)=>{
     const days = computeDaysLeft(it);
     const pill = document.createElement('div'); pill.className = 'notable-pill';
-    // ensure color
-    if(!it.color) it.color = randomAccent();
+  // ensure color
+  if(!it.color) it.color = randomAccent();
     const label = document.createElement('div'); label.className='label'; label.textContent = it.label + ': ';
     const daysEl = document.createElement('div'); daysEl.className='days';
     if(days===0) daysEl.textContent = 'Today';
     else if(days>0) daysEl.textContent = `${days}d`;
     else daysEl.textContent = `${Math.abs(days)} days ago`;
-    const rem = document.createElement('button'); rem.className='remove'; rem.textContent='✕';
-    rem.addEventListener('click', ()=>{ notables.splice(idx,1); saveNotables(); renderNotables(); });
+  const rem = document.createElement('button'); rem.className='remove'; rem.textContent='✕';
+  rem.addEventListener('click', ()=>{ notables.splice(idx,1); saveNotables(notables); renderNotables(); });
     // apply accent color via CSS variable
     pill.style.setProperty('--accent', it.color);
     pill.appendChild(label); pill.appendChild(daysEl); pill.appendChild(rem);
@@ -100,16 +67,7 @@ function renderNotables(){
   });
 }
 
-function populateTimezones(){
-  // Minimal list to avoid huge DOM — add common zones
-  const zones = ['UTC','Europe/London','Europe/Warsaw','America/New_York','America/Los_Angeles','Asia/Tokyo','Asia/Kolkata'];
-  for(const z of zones){
-    const opt = document.createElement('option');
-    opt.value = z; opt.textContent = z;
-    if(z===selectedTZ) opt.selected = true;
-    if(tzSelect) tzSelect.appendChild(opt);
-  }
-}
+// timezone selector UI was removed; selectedTZ is still respected if previously saved
 
 // clock removed; using notables list instead
 
@@ -119,19 +77,22 @@ function renderMonth(year, month){
   monthEl.className = 'month';
   monthEl.dataset.year = year;
   monthEl.dataset.month = month;
-  const monthTitle = new Date(year, month, 1).toLocaleString(undefined,{month:'long',year:'numeric'});
+  const monthTitle = formatMonthTitle(year, month);
   const h3 = document.createElement('h3'); h3.textContent = monthTitle;
   monthEl.appendChild(h3);
 
   const table = document.createElement('table');
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
-  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{const th=document.createElement('th');th.textContent=d;headerRow.appendChild(th)});
+  // start week on Monday
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d=>{const th=document.createElement('th');th.textContent=d;headerRow.appendChild(th)});
   thead.appendChild(headerRow);
   table.appendChild(thead);
 
   const tbody = document.createElement('tbody');
-  const firstDay = new Date(year,month,1).getDay();
+  // compute first day index with Monday as the first column (0=Mon ... 6=Sun)
+  let firstDay = new Date(year,month,1).getDay(); // JS: 0=Sun..6=Sat
+  firstDay = firstDay === 0 ? 6 : firstDay - 1;
   const daysInMonth = new Date(year,month+1,0).getDate();
 
   let row = document.createElement('tr');
@@ -140,9 +101,25 @@ function renderMonth(year, month){
   for(let d=1;d<=daysInMonth;d++){
     if(row.children.length===7){tbody.appendChild(row);row=document.createElement('tr')}
     const td = document.createElement('td'); td.textContent = d;
+    // mark notable days (user-defined dates and certain rules like 'newyear'), skip default 'weekend' rule
+    try{
+      const dateStr = `${year}-${pad(month+1)}-${pad(d)}`;
+      // exact date match
+      let notable = notables.find(it => it.type === 'date' && it.date === dateStr);
+      // rule-based matches (only newyear for now; skip 'weekend')
+      if(!notable){
+        const nyRule = notables.find(it => it.type === 'rule' && it.id === 'newyear');
+        if(nyRule && month === 0 && d === 1) notable = nyRule;
+      }
+      if(notable){
+        // ensure color exists
+        if(!notable.color) notable.color = randomAccent();
+        td.classList.add('notable');
+        td.style.setProperty('--notable-accent', notable.color);
+      }
+    }catch(e){ /* ignore */ }
     // mark today according to selectedTZ
-    const tzNow = new Date().toLocaleString('en-US',{timeZone:selectedTZ});
-    const local = new Date(tzNow);
+  const local = getTzNow(selectedTZ);
     if(local.getFullYear()===year && local.getMonth()===month && local.getDate()===d){
       td.classList.add('today');
     }
@@ -151,15 +128,8 @@ function renderMonth(year, month){
     td.dataset.day = d;
     td.addEventListener('click', (e)=>{
       e.stopPropagation();
-      const label = prompt('Label for notable day (leave empty to cancel):');
-      if(!label) return;
-      const dateStr = `${year}-${pad(month+1)}-${pad(d)}`;
-      notables.push({type:'date', date:dateStr, label:label});
-      saveNotables();
-      renderNotables();
-      // add a quick visual mark to the cell
-      td.classList.add('today-flash');
-      setTimeout(()=>td.classList.remove('today-flash'),1400);
+      // open modal to request label instead of using prompt()
+      openNotableModal(year, month, d, td);
     });
     row.appendChild(td);
   }
@@ -169,6 +139,87 @@ function renderMonth(year, month){
   monthEl.appendChild(table);
   return monthEl;
 }
+
+// Modal handling for adding notables
+const modal = document.getElementById('notableModal');
+const modalInput = document.getElementById('modalLabel');
+const modalOk = document.getElementById('modalOk');
+const modalCancel = document.getElementById('modalCancel');
+let modalContext = null; // {year, month, day, cell}
+let _modalKeyHandler = null;
+
+function openNotableModal(year, month, day, cell){
+  modalContext = {year, month, day, cell};
+  modal.setAttribute('aria-hidden','false');
+  modalInput.value = '';
+  modalInput.focus();
+  // attach keyboard handler to support Enter, Escape and Tab focus trap
+  _modalKeyHandler = function(e){
+    // Escape -> close
+    if(e.key === 'Escape'){
+      e.preventDefault();
+      closeNotableModal();
+      return;
+    }
+    // Enter -> submit when focus is in input (or anywhere in modal)
+    if(e.key === 'Enter'){
+      // Prevent accidental form submits elsewhere
+      e.preventDefault();
+      modalOk.click();
+      return;
+    }
+    // Tab -> trap focus inside modal
+    if(e.key === 'Tab'){
+      const modalCard = modal.querySelector('.modal-card');
+      if(!modalCard) return;
+      const focusable = Array.from(modalCard.querySelectorAll('input, button, [tabindex]:not([tabindex="-1"])'))
+        .filter(el => !el.disabled && el.offsetParent !== null);
+      if(focusable.length === 0) return;
+      const idx = focusable.indexOf(document.activeElement);
+      const direction = e.shiftKey ? -1 : 1;
+      let next = 0;
+      if(idx === -1){
+        next = 0;
+      } else {
+        next = (idx + direction + focusable.length) % focusable.length;
+      }
+      e.preventDefault();
+      focusable[next].focus();
+    }
+  };
+  document.addEventListener('keydown', _modalKeyHandler);
+}
+
+function closeNotableModal(){
+  modalContext = null;
+  modal.setAttribute('aria-hidden','true');
+  if(_modalKeyHandler){
+    document.removeEventListener('keydown', _modalKeyHandler);
+    _modalKeyHandler = null;
+  }
+}
+
+modalCancel.addEventListener('click', ()=>{ closeNotableModal(); });
+modalOk.addEventListener('click', ()=>{
+  if(!modalContext) return;
+  const label = modalInput.value.trim();
+  if(!label) return;
+  const {year, month, day, cell} = modalContext;
+  const dateStr = `${year}-${pad(month+1)}-${pad(day)}`;
+  notables.push({type:'date', date:dateStr, label});
+  saveNotables(notables);
+  renderNotables();
+  // re-render calendar months to mark the new notable immediately
+  if(typeof initMonths === 'function' && monthsContainer) initMonths();
+  // add visual flash on the originating cell if still in DOM
+  if(cell) cell.classList.add('today-flash');
+  setTimeout(()=>{ if(cell) cell.classList.remove('today-flash') },1400);
+  closeNotableModal();
+});
+
+// close modal on backdrop click
+modal.addEventListener('click', (e)=>{ if(e.target === modal) closeNotableModal(); });
+
 
 // Infinite months buffer management
 const MONTH_BUFFER_BACK = 3; // number of months before current to keep
@@ -287,11 +338,10 @@ function goToToday(){
   if(!monthsContainer) return;
   const now = new Date();
   // use selectedTZ to compute today's year/month/day in that TZ
-  const tzNowStr = new Date().toLocaleString('en-US',{timeZone:selectedTZ});
-  const tzNow = new Date(tzNowStr);
-  const targetYear = tzNow.getFullYear();
-  const targetMonth = tzNow.getMonth();
-  const targetDate = tzNow.getDate();
+  const nowTz = getTzNow(selectedTZ);
+  const targetYear = nowTz.getFullYear();
+  const targetMonth = nowTz.getMonth();
+  const targetDate = nowTz.getDate();
 
   // find matching month element
   const children = Array.from(monthsContainer.children);
@@ -323,16 +373,7 @@ function goToToday(){
 
 // navigation buttons removed; using infinite scroll instead
 
-// timezone change (guarded) - re-render months buffer when timezone changes
-if(tzSelect){
-  tzSelect.addEventListener('change', e => {
-    selectedTZ = e.target.value;
-    localStorage.setItem('selectedTZ', selectedTZ);
-    // re-render months to update 'today' marking in the new timezone
-    if(typeof initMonths === 'function' && monthsContainer) initMonths();
-    renderNotables();
-  });
-}
+// timezone UI removed — selectedTZ can still be set via localStorage if present
 
 // settings open/close
 // settings handlers removed
@@ -341,7 +382,8 @@ if(tzSelect){
 (function init(){
   const saved = localStorage.getItem('selectedTZ');
   if(saved) selectedTZ = saved;
-  populateTimezones();
+  // load notables first so initial months render can mark notable cells
+  notables = loadNotables();
   // build initial months buffer
   if(monthsContainer){
     initMonths();
@@ -350,9 +392,8 @@ if(tzSelect){
   if(todayBtn){
     todayBtn.addEventListener('click', goToToday);
   }
-    // load and render notable days
-    loadNotables();
-    renderNotables();
+  // render notable list
+  renderNotables();
     // refresh notables every minute to update counts
     setInterval(renderNotables,60*1000);
   
