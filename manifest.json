@@ -1,7 +1,7 @@
 {
   "name": "Clock & Calendar PWA",
   "short_name": "how many days till?",
-  "start_url": "https://mistrzunio.github.io/test-paw/",
+  "start_url": "https://mistrzunio.github.io/howmanydays/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0d47a1",

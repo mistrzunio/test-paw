@@ -400,7 +400,7 @@ function goToToday(){
   // Hide the hint paragraph when running as an installed PWA / standalone
   const hint = document.querySelector('.hint');
   function isStandalone(){
-    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    return 
   }
   function updateHintVisibility(){
     if(!hint) return;
@@ -416,6 +416,7 @@ function goToToday(){
   window.addEventListener('resize', updateHintVisibility);
 
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/sw.js').then(()=>console.log('sw registered')).catch(console.error);
+    // window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    navigator.serviceWorker.register('/howmanydays/sw.js').then(()=>console.log('sw registered')).catch(console.error);
   }
 })();
