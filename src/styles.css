@@ -36,7 +36,7 @@ h1{text-align:center;margin:0 0 18px}
 .today-flash{animation: flash 1.6s ease-in-out; background: linear-gradient(90deg, rgba(13,71,161,0.18), rgba(13,71,161,0.05));border-radius:6px}
 @keyframes flash{0%{transform:scale(1);opacity:1}50%{transform:scale(1.02);opacity:0.9}100%{transform:scale(1);opacity:1}}
 .month td.notable{background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)), var(--notable-accent, #e6eef9);border-radius:1px;color:#062235;font-weight:600}
-.month td.notable::after{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;margin-left:6px;background:rgba(0,0,0,0.08)}
+/* .month td.notable::after{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;margin-left:6px;background:rgba(0,0,0,0.08)} */
 .cal-header{display:flex;align-items:center;justify-content:space-between}
 .cal-header #monthYear{background:var(--card);display:inline-block;padding:6px 12px;border-radius:8px}
 .cal-header button{border:1px solid #e5e7eb;padding:6px 10px;border-radius:6px;background:transparent}
