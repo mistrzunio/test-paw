@@ -10,33 +10,22 @@
 </head>
 <body>
   <main class="container">
-    <h1>Clock & Calendar</h1>
+    <p class="top-hint">the only calendar that matters :-)</p>
 
     <section class="card clock-card">
-      <div class="clock" id="clock">--:--:--</div>
-      <div class="controls" style="text-align:center;margin-top:12px;">
-        <button id="openSettings" class="btn">Settings</button>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <!-- header removed; Today button will live inside the notable list -->
+      </div>
+      <div id="notableList" class="notable-list">
+        <div class="notable-actions"><button id="todayBtn" class="btn">Today</button></div>
       </div>
     </section>
 
-    <!-- Settings panel (hidden by default) -->
-    <section class="card settings-card" id="settings" aria-hidden="true" style="display:none;">
-      <h2>Settings</h2>
-      <label for="tz">Timezone:</label>
-      <select id="tz"></select>
-      <div style="margin-top:12px;text-align:right;">
-        <button id="closeSettings" class="btn">Close</button>
-      </div>
-    </section>
+    <!-- settings removed -->
 
     <section class="card calendar-card">
-      <header class="cal-header">
-        <div id="monthYear">Browse months</div>
-      </header>
       <div id="monthsContainer" class="months-container" tabindex="0"></div>
     </section>
-
-    <p class="hint">Installable PWA — add to home screen.</p>
   </main>
 
   <script type="module" src="src/main.js"></script>

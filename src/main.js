@@ -1,14 +1,104 @@
-const clockEl = document.getElementById('clock');
 const tzSelect = document.getElementById('tz');
 const calendarEl = document.getElementById('calendar');
 const monthYearEl = document.getElementById('monthYear');
 const monthsContainer = document.getElementById('monthsContainer');
-const settingsPanel = document.getElementById('settings');
-const openSettingsBtn = document.getElementById('openSettings');
-const closeSettingsBtn = document.getElementById('closeSettings');
+// settings removed
+const todayBtn = document.getElementById('todayBtn');
 
 let currentDate = new Date();
 let selectedTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+let notables = [];
+
+function pad(n){return n<10? '0'+n: String(n)}
+
+function randomAccent(){
+  // pick very light, low-saturation pastel with alpha for subtle background
+  const h = Math.floor(Math.random()*360);
+  const s = 30; // lower saturation for subtlety
+  const l = 94; // very light
+  const a = 0.54; // low alpha
+  // return as HSL with alpha (CSS color syntax)
+  return `hsl(${h} ${s}% ${l}% / ${a})`;
+}
+
+function loadNotables(){
+  try{
+    const raw = localStorage.getItem('notables');
+    if(raw){ notables = JSON.parse(raw); }
+  }catch(e){notables = []}
+  if(!Array.isArray(notables) || notables.length===0){
+    // defaults: weekend and new year (rules)
+    notables = [
+      {type:'rule', id:'weekend', label:'Weekend', color: randomAccent()},
+      {type:'rule', id:'newyear', label:'New Year', color: randomAccent()}
+    ];
+    saveNotables();
+  }
+  // backfill missing colors
+  let changed = false;
+  for(const it of notables){ if(!it.color){ it.color = randomAccent(); changed = true } }
+  if(changed) saveNotables();
+}
+
+function saveNotables(){
+  localStorage.setItem('notables', JSON.stringify(notables));
+}
+
+function computeDaysLeft(item){
+  // get today's date in selected timezone
+  const tzNowStr = new Date().toLocaleString('en-US',{timeZone:selectedTZ});
+  const tzNow = new Date(tzNowStr);
+  const today = new Date(tzNow.getFullYear(), tzNow.getMonth(), tzNow.getDate());
+  const MS_DAY = 24*60*60*1000;
+  if(item.type === 'date'){
+    const parts = item.date.split('-').map(Number);
+    const target = new Date(parts[0], parts[1]-1, parts[2]);
+    const diff = Math.ceil((target - today)/MS_DAY);
+    return diff;
+  }
+  if(item.type === 'rule'){
+    if(item.id === 'weekend'){
+      const day = today.getDay(); // 0=Sun..6=Sat
+      // next Saturday as start of weekend
+      const daysUntilSat = (6 - day + 7) % 7;
+      return daysUntilSat;
+    }
+    if(item.id === 'newyear'){
+      const year = today.getFullYear();
+      const nextNY = new Date(year + (today.getMonth()===0 && today.getDate()===1 ? 0 : 1),0,1);
+      const diff = Math.ceil((nextNY - today)/MS_DAY);
+      return diff;
+    }
+  }
+  return null;
+}
+
+function renderNotables(){
+  const container = document.getElementById('notableList');
+  if(!container) return;
+  // Preserve the actions block (Today button) if present, then clear the rest
+  const actions = container.querySelector('.notable-actions');
+  // Remove existing children but keep a reference to actions so we can re-append it
+  container.innerHTML = '';
+  if(actions) container.appendChild(actions);
+  notables.forEach((it,idx)=>{
+    const days = computeDaysLeft(it);
+    const pill = document.createElement('div'); pill.className = 'notable-pill';
+    // ensure color
+    if(!it.color) it.color = randomAccent();
+    const label = document.createElement('div'); label.className='label'; label.textContent = it.label + ': ';
+    const daysEl = document.createElement('div'); daysEl.className='days';
+    if(days===0) daysEl.textContent = 'Today';
+    else if(days>0) daysEl.textContent = days===1? '1 day' : `${days} days`;
+    else daysEl.textContent = `${Math.abs(days)} days ago`;
+    const rem = document.createElement('button'); rem.className='remove'; rem.textContent='✕';
+    rem.addEventListener('click', ()=>{ notables.splice(idx,1); saveNotables(); renderNotables(); });
+    // apply accent color via CSS variable
+    pill.style.setProperty('--accent', it.color);
+    pill.appendChild(label); pill.appendChild(daysEl); pill.appendChild(rem);
+    container.appendChild(pill);
+  });
+}
 
 function populateTimezones(){
   // Minimal list to avoid huge DOM — add common zones
@@ -21,16 +111,14 @@ function populateTimezones(){
   }
 }
 
-function updateClock(){
-  const now = new Date();
-  const fmt = new Intl.DateTimeFormat('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:selectedTZ});
-  clockEl.textContent = fmt.format(now);
-}
+// clock removed; using notables list instead
 
 // Render a single month element for a given year/month
 function renderMonth(year, month){
   const monthEl = document.createElement('div');
   monthEl.className = 'month';
+  monthEl.dataset.year = year;
+  monthEl.dataset.month = month;
   const monthTitle = new Date(year, month, 1).toLocaleString(undefined,{month:'long',year:'numeric'});
   const h3 = document.createElement('h3'); h3.textContent = monthTitle;
   monthEl.appendChild(h3);
@@ -58,6 +146,21 @@ function renderMonth(year, month){
     if(local.getFullYear()===year && local.getMonth()===month && local.getDate()===d){
       td.classList.add('today');
     }
+    // make day clickable to add notable
+    td.classList.add('clickable');
+    td.dataset.day = d;
+    td.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const label = prompt('Label for notable day (leave empty to cancel):');
+      if(!label) return;
+      const dateStr = `${year}-${pad(month+1)}-${pad(d)}`;
+      notables.push({type:'date', date:dateStr, label:label});
+      saveNotables();
+      renderNotables();
+      // add a quick visual mark to the cell
+      td.classList.add('today-flash');
+      setTimeout(()=>td.classList.remove('today-flash'),1400);
+    });
     row.appendChild(td);
   }
   while(row.children.length<7){const td=document.createElement('td');td.textContent='';row.appendChild(td)}
@@ -68,10 +171,11 @@ function renderMonth(year, month){
 }
 
 // Infinite months buffer management
-const MONTH_BUFFER = 6; // number of months before/after current to keep
-let earliest = new Date(currentDate.getFullYear(), currentDate.getMonth()-MONTH_BUFFER, 1);
-let latest = new Date(currentDate.getFullYear(), currentDate.getMonth()+MONTH_BUFFER, 1);
-const MAX_MONTHS = 30; // keep DOM bounded to this many month elements
+const MONTH_BUFFER_BACK = 3; // number of months before current to keep
+const MONTH_BUFFER_FWD = 12; // number of months after current to keep
+let earliest = new Date(currentDate.getFullYear(), currentDate.getMonth()-MONTH_BUFFER_BACK, 1);
+let latest = new Date(currentDate.getFullYear(), currentDate.getMonth()+MONTH_BUFFER_FWD, 1);
+const MAX_MONTHS = 300; // keep DOM bounded to this many month elements
 
 function initMonths(){
   monthsContainer.innerHTML = '';
@@ -178,6 +282,45 @@ function onMonthsScroll(){
   }
 }
 
+// scroll to current month/day and flash today's cell
+function goToToday(){
+  if(!monthsContainer) return;
+  const now = new Date();
+  // use selectedTZ to compute today's year/month/day in that TZ
+  const tzNowStr = new Date().toLocaleString('en-US',{timeZone:selectedTZ});
+  const tzNow = new Date(tzNowStr);
+  const targetYear = tzNow.getFullYear();
+  const targetMonth = tzNow.getMonth();
+  const targetDate = tzNow.getDate();
+
+  // find matching month element
+  const children = Array.from(monthsContainer.children);
+  let targetEl = children.find(c => Number(c.dataset.year)===targetYear && Number(c.dataset.month)===targetMonth);
+  if(!targetEl){
+    // if not present, try appending months until it's within buffer
+    let tries = 0;
+    while(!targetEl && tries<120){ // safety cap
+      appendMonth();
+      tries++;
+      targetEl = Array.from(monthsContainer.children).find(c=>Number(c.dataset.year)===targetYear && Number(c.dataset.month)===targetMonth);
+    }
+  }
+  if(targetEl){
+    targetEl.scrollIntoView({block:'center'});
+    // highlight the date cell if present
+    const cell = targetEl.querySelector(`td:nth-child(n)`); // placeholder
+    // locate the cell with the date text
+    const tds = targetEl.querySelectorAll('td');
+    for(const td of tds){
+      if(td.textContent.trim() === String(targetDate)){
+        td.classList.add('today-flash');
+        setTimeout(()=>td.classList.remove('today-flash'), 1800);
+        break;
+      }
+    }
+  }
+}
+
 // navigation buttons removed; using infinite scroll instead
 
 // timezone change (guarded) - re-render months buffer when timezone changes
@@ -185,25 +328,14 @@ if(tzSelect){
   tzSelect.addEventListener('change', e => {
     selectedTZ = e.target.value;
     localStorage.setItem('selectedTZ', selectedTZ);
-    updateClock();
     // re-render months to update 'today' marking in the new timezone
     if(typeof initMonths === 'function' && monthsContainer) initMonths();
+    renderNotables();
   });
 }
 
 // settings open/close
-if(openSettingsBtn){
-  openSettingsBtn.addEventListener('click', ()=>{
-    settingsPanel.style.display = '';
-    settingsPanel.setAttribute('aria-hidden','false');
-  });
-}
-if(closeSettingsBtn){
-  closeSettingsBtn.addEventListener('click', ()=>{
-    settingsPanel.style.display = 'none';
-    settingsPanel.setAttribute('aria-hidden','true');
-  });
-}
+// settings handlers removed
 
 // init
 (function init(){
@@ -215,8 +347,14 @@ if(closeSettingsBtn){
     initMonths();
     monthsContainer.addEventListener('scroll', onMonthsScroll);
   }
-  updateClock();
-  setInterval(updateClock,1000);
+  if(todayBtn){
+    todayBtn.addEventListener('click', goToToday);
+  }
+    // load and render notable days
+    loadNotables();
+    renderNotables();
+    // refresh notables every minute to update counts
+    setInterval(renderNotables,60*1000);
   
   // Hide the hint paragraph when running as an installed PWA / standalone
   const hint = document.querySelector('.hint');

@@ -10,23 +10,46 @@ body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","
 .container{max-width:720px;margin:24px auto;padding:16px}
 h1{text-align:center;margin:0 0 18px}
 .card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 1px 3px rgba(16,24,40,.06);margin-bottom:16px}
-.clock{font-size:48px;text-align:center;font-weight:600}
 .btn{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
 .btn:active{transform:translateY(1px)}
 .settings-card h2{margin-top:0}
 #tz{display:block;margin:12px auto}
-.calendar{width:100%;border-collapse:collapse;margin-top:8px}
-.calendar th{padding:8px;color:var(--muted);font-weight:600}
-.calendar td{height:64px;text-align:right;padding:8px;border-top:1px solid #eee}
+.notable-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.notable-pill{background: linear-gradient(90deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06)), var(--accent, #e6eef9); padding:8px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(6,34,53,0.05);box-shadow:0 1px 1px rgba(11,37,64,0.02)}
+.notable-pill .label{font-weight:600;color:#062235}
+.notable-pill .days{color:rgba(6,34,53,0.75);font-size:13px}
+.notable-pill .remove{background:transparent;border:none;color:#a00;cursor:pointer;padding:4px}
+.notable-pill{--accent: #e6eef9}
+.month td{cursor:default}
+.month td.clickable{cursor:pointer}
+.calendar{width:100%;border-collapse:collapse;margin-top:8px;table-layout:fixed}
+.calendar th{padding:8px;color:var(--muted);font-weight:600;text-align:center}
+.calendar td{height:64px;text-align:right;padding:8px;border-top:1px solid #eee;width:14.2857%}
 .calendar td.today{background:linear-gradient(90deg, rgba(13,71,161,0.08), rgba(13,71,161,0.02));border-radius:6px}
 .months-container{height:420px;overflow:auto;border-top:1px solid #eee;border-bottom:1px solid #eee;padding:8px;margin-top:8px}
 .month{background:#fff;margin:8px 0;padding:12px;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .month h3{margin:0 0 8px;font-size:16px}
-.month table{width:100%;border-collapse:collapse}
-.month th{padding:6px;color:var(--muted);font-weight:600;text-align:left}
-.month td{padding:6px;text-align:right;height:36px;border-top:1px solid #f3f4f6}
+.month table{width:100%;border-collapse:collapse;table-layout:fixed}
+.month th{padding:6px;color:var(--muted);font-weight:600;text-align:center;width:14.2857%}
+.month td{padding:6px;text-align:right;height:36px;border-top:1px solid #f3f4f6;width:14.2857%}
 .month td.today{background:linear-gradient(90deg, rgba(13,71,161,0.08), rgba(13,71,161,0.02));border-radius:6px}
+.today-flash{animation: flash 1.6s ease-in-out; background: linear-gradient(90deg, rgba(13,71,161,0.18), rgba(13,71,161,0.05));border-radius:6px}
+@keyframes flash{0%{transform:scale(1);opacity:1}50%{transform:scale(1.02);opacity:0.9}100%{transform:scale(1);opacity:1}}
 .cal-header{display:flex;align-items:center;justify-content:space-between}
-.cal-header button{background:none;border:1px solid #e5e7eb;padding:6px 10px;border-radius:6px}
-.hint{text-align:center;color:var(--muted);font-size:13px}
+.cal-header #monthYear{background:var(--card);display:inline-block;padding:6px 12px;border-radius:8px}
+.cal-header button{border:1px solid #e5e7eb;padding:6px 10px;border-radius:6px;background:transparent}
+.cal-header .btn{padding:6px 10px}
+.header-actions{display:flex;gap:8px;align-items:center}
+/* Make header action buttons clearly visible */
+.header-actions .btn{
+  background:var(--accent);
+  color:#fff;
+  border: none;
+  padding:6px 10px;
+  border-radius:8px;
+  box-shadow:0 1px 2px rgba(13,71,161,0.12);
+}
+.header-actions .btn:hover{opacity:0.95;transform:translateY(-1px)}
+.notable-actions{display:flex;align-items:center}
+.top-hint{text-align:right;color:var(--muted);font-size:23px;font-style: italic;}
 @media (max-width:480px){.clock{font-size:36px}.calendar td{height:48px}}
