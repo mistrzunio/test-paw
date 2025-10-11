@@ -51,5 +51,5 @@ h1{text-align:center;margin:0 0 18px}
 }
 .header-actions .btn:hover{opacity:0.95;transform:translateY(-1px)}
 .notable-actions{display:flex;align-items:center}
-.top-hint{text-align:right;color:var(--muted);font-size:23px;font-style: italic;}
+.top-hint{text-align:right;color:var(--muted);font-size:14px;font-style: italic;}
 @media (max-width:480px){.clock{font-size:36px}.calendar td{height:48px}}
