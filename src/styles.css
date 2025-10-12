@@ -5,7 +5,7 @@
   --muted:#6b7280;
 }
 *{box-sizing:border-box}
-html,body{height:100%;font-size:14px;}
+html,body{height:100%;font-size:15px;}
 body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";margin:0;background:var(--bg);color:#111}
 .container{max-width:720px;margin:24px auto;padding:16px}
 h1{text-align:center;margin:0 0 18px}
@@ -53,7 +53,8 @@ h1{text-align:center;margin:0 0 18px}
 }
 .header-actions .btn:hover{opacity:0.95;transform:translateY(-1px)}
 .notable-actions{display:flex;align-items:center}
-.top-hint{text-align:right;color:var(--muted);font-size:14px;font-style: italic;}
+.hint{color:var(--muted);font-size:10px;}
+.top-hint{text-align:right;font-size:13px;font-style: italic;}
 @media (max-width:480px){.clock{font-size:36px}.calendar td{height:48px}}
 
 /* Modal for adding notable label */

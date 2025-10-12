@@ -226,7 +226,7 @@ modal.addEventListener('click', (e)=>{ if(e.target === modal) closeNotableModal(
 
 
 // Infinite months buffer management
-const MONTH_BUFFER_BACK = 3; // number of months before current to keep
+const MONTH_BUFFER_BACK = 12; // number of months before current to keep
 const MONTH_BUFFER_FWD = 12; // number of months after current to keep
 let earliest = new Date(currentDate.getFullYear(), currentDate.getMonth()-MONTH_BUFFER_BACK, 1);
 let latest = new Date(currentDate.getFullYear(), currentDate.getMonth()+MONTH_BUFFER_FWD, 1);
@@ -267,7 +267,8 @@ function prependMonth(){
   earliest = new Date(earliest.getFullYear(), earliest.getMonth()-1, 1);
   const el = renderMonth(earliest.getFullYear(), earliest.getMonth());
   monthsContainer.insertBefore(el, monthsContainer.firstChild);
-  pruneMonthsIfNeeded();
+  pruneMonthsIfNeeded(); 
+  
 }
 
 function appendMonth(){
@@ -325,15 +326,39 @@ function pruneMonthsIfNeeded(){
   }
 }
 
+function outerHeight(element) {
+    const computedStyle = getComputedStyle(element);
+    
+    // Get individual values and convert to numbers
+    const height = parseFloat(computedStyle.height);
+    const paddingTop = parseFloat(computedStyle.paddingTop);
+    const paddingBottom = parseFloat(computedStyle.paddingBottom);
+    const marginTop = parseFloat(computedStyle.marginTop);
+    const marginBottom = parseFloat(computedStyle.marginBottom);
+    const borderTop = parseFloat(computedStyle.borderTopWidth);
+    const borderBottom = parseFloat(computedStyle.borderBottomWidth);
+    
+    return height + paddingTop + paddingBottom + marginTop + marginBottom + borderTop + borderBottom;
+}
+
 // attach scroll listener to keep buffer
 function onMonthsScroll(){
-  const threshold = 200; // px
+  const threshold = 150; // px
+  const monthsToAdd = 6;
   if(monthsContainer.scrollTop < threshold){
     // near top, prepend several months to keep buffer
-    for(let i=0;i<3;i++) prependMonth();
+    // outerHeight()
+    if (monthsContainer.firstElementChild) {
+      monthsContainer.scrollTop += (outerHeight(monthsContainer.firstElementChild)*(monthsToAdd+1)+threshold); 
+    } else {
+      monthsContainer.scrollTop += (300); 
+    }
+    for(let i=0;i<monthsToAdd;i++) {
+      prependMonth();
+    }
   }
   if(monthsContainer.scrollHeight - monthsContainer.clientHeight - monthsContainer.scrollTop < threshold){
-    for(let i=0;i<3;i++) appendMonth();
+    for(let i=0;i<monthsToAdd;i++) appendMonth();
   }
 }
 
