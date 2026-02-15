@@ -263,19 +263,34 @@ function initMonths(){
   }
 }
 
-function prependMonth(){
-  earliest = new Date(earliest.getFullYear(), earliest.getMonth()-1, 1);
-  const el = renderMonth(earliest.getFullYear(), earliest.getMonth());
-  monthsContainer.insertBefore(el, monthsContainer.firstChild);
-  pruneMonthsIfNeeded(); 
-  
+let isLoading = false;
+
+function prependMonths(count){
+  const fragment = document.createDocumentFragment();
+  for(let i=0; i<count; i++){
+    earliest = new Date(earliest.getFullYear(), earliest.getMonth()-1, 1);
+    const el = renderMonth(earliest.getFullYear(), earliest.getMonth());
+    // Prepend to fragment in reverse order of creation is tricky
+    // Better: prepend 'el' to the *start* of the fragment?
+    // No, we are going backwards in time. 
+    // If we are at Jan, and want to prepend Dec, Nov.
+    // Loop 1: earliest becomes Dec. Render Dec.
+    // Loop 2: earliest becomes Nov. Render Nov.
+    // We want Nov to be above Dec.
+    // So we should insert 'el' at the beginning of the fragment.
+    fragment.insertBefore(el, fragment.firstChild);
+  }
+  monthsContainer.insertBefore(fragment, monthsContainer.firstChild);
 }
 
-function appendMonth(){
-  latest = new Date(latest.getFullYear(), latest.getMonth()+1, 1);
-  const el = renderMonth(latest.getFullYear(), latest.getMonth());
-  monthsContainer.appendChild(el);
-  pruneMonthsIfNeeded();
+function appendMonths(count){
+  const fragment = document.createDocumentFragment();
+  for(let i=0; i<count; i++){
+    latest = new Date(latest.getFullYear(), latest.getMonth()+1, 1);
+    const el = renderMonth(latest.getFullYear(), latest.getMonth());
+    fragment.appendChild(el);
+  }
+  monthsContainer.appendChild(fragment);
 }
 
 function pruneMonthsIfNeeded(){
@@ -326,39 +341,39 @@ function pruneMonthsIfNeeded(){
   }
 }
 
-function outerHeight(element) {
-    const computedStyle = getComputedStyle(element);
-    
-    // Get individual values and convert to numbers
-    const height = parseFloat(computedStyle.height);
-    const paddingTop = parseFloat(computedStyle.paddingTop);
-    const paddingBottom = parseFloat(computedStyle.paddingBottom);
-    const marginTop = parseFloat(computedStyle.marginTop);
-    const marginBottom = parseFloat(computedStyle.marginBottom);
-    const borderTop = parseFloat(computedStyle.borderTopWidth);
-    const borderBottom = parseFloat(computedStyle.borderBottomWidth);
-    
-    return height + paddingTop + paddingBottom + marginTop + marginBottom + borderTop + borderBottom;
-}
+
 
 // attach scroll listener to keep buffer
 function onMonthsScroll(){
-  const threshold = 150; // px
-  const monthsToAdd = 6;
+  if(isLoading) return;
+  
+  const threshold = 200; // px
+  const monthsToAdd = 2; // Reduced batch size for smoother UI
+  
   if(monthsContainer.scrollTop < threshold){
-    // near top, prepend several months to keep buffer
-    // outerHeight()
-    if (monthsContainer.firstElementChild) {
-      monthsContainer.scrollTop += (outerHeight(monthsContainer.firstElementChild)*(monthsToAdd+1)+threshold); 
-    } else {
-      monthsContainer.scrollTop += (300); 
-    }
-    for(let i=0;i<monthsToAdd;i++) {
-      prependMonth();
-    }
-  }
-  if(monthsContainer.scrollHeight - monthsContainer.clientHeight - monthsContainer.scrollTop < threshold){
-    for(let i=0;i<monthsToAdd;i++) appendMonth();
+    isLoading = true;
+    requestAnimationFrame(() => {
+      // near top, prepend several months to keep buffer
+      // Capture current scroll height
+      const oldScrollHeight = monthsContainer.scrollHeight;
+      
+      prependMonths(monthsToAdd);
+      
+      // Adjust scrollTop by the difference in scrollHeight (height of added content)
+      // This keeps the viewport stable relative to the content
+      const newScrollHeight = monthsContainer.scrollHeight;
+      monthsContainer.scrollTop += (newScrollHeight - oldScrollHeight);
+      
+      pruneMonthsIfNeeded();
+      isLoading = false;
+    });
+  } else if(monthsContainer.scrollHeight - monthsContainer.clientHeight - monthsContainer.scrollTop < threshold){
+    isLoading = true;
+    requestAnimationFrame(() => {
+      appendMonths(monthsToAdd);
+      pruneMonthsIfNeeded();
+      isLoading = false;
+    });
   }
 }
 
@@ -379,7 +394,7 @@ function goToToday(){
     // if not present, try appending months until it's within buffer
     let tries = 0;
     while(!targetEl && tries<120){ // safety cap
-      appendMonth();
+      appendMonths(1);
       tries++;
       targetEl = Array.from(monthsContainer.children).find(c=>Number(c.dataset.year)===targetYear && Number(c.dataset.month)===targetMonth);
     }
