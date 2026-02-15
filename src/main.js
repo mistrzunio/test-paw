@@ -462,7 +462,8 @@ function goToToday(){
   window.addEventListener('resize', updateHintVisibility);
 
   if('serviceWorker' in navigator){
-    // window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    navigator.serviceWorker.register('/howmanydays/sw.js').then(()=>console.log('sw registered')).catch(console.error);
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(()=>console.log('Service Worker registered'))
+      .catch(console.error);
   }
 })();
